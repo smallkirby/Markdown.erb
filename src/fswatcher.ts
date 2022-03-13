@@ -107,12 +107,20 @@ export class ErbFileManager {
     this.inited = true;
   }
 
-  addErb(erbs: ErbFile[]) {
+  addErb(erbs: ErbFile[], treeProvider: MarkdownErbTreeProvider) {
     if (erbs.filter(erb => erb.uri === null).length !== 0)
       throw new ErbFileManagerInvalidFileException('File with url null is passed to ErbFileManager.');
     if (!this.inited) this.raiseUninitedError();
-    this.erbFiles.concat(erbs);
+    this.erbFiles = this.erbFiles.concat(erbs);
     console.debug(`Added ${erbs.length} erb files.`);
+    treeProvider.refresh();
+  }
+
+  removeErb(uri: vscode.Uri, treeProvider: MarkdownErbTreeProvider) {
+    const target = this.erbFiles.findIndex(erb => erb.uri!!.path === uri.path);
+    if (target === -1) return;
+    this.erbFiles.splice(target, 1);
+    treeProvider.refresh();
   }
 
   watchErb(erb: ErbFile, treeProvider: MarkdownErbTreeProvider) {
@@ -168,6 +176,3 @@ const getAllErb = async (): Promise<ErbFile[]> => {
 export const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*.md.erb');
 export const erbManager = new ErbFileManager();
 
-fsWatcher.onDidCreate((uri) => {
-  erbManager.addErb([new ErbFile(uri, false, null)]);
-});

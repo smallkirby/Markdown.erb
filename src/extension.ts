@@ -8,6 +8,19 @@ export const activate = async (context: vscode.ExtensionContext) => {
   // init ErbManager
   await erbManager.init();
 
+  // watch filesystem
+  fsWatcher.onDidCreate((uri) => {
+    if (uri.path.endsWith('.md.erb')) {
+      erbManager.addErb([new ErbFile(uri, false, null)], erbTreeProvider);
+    }
+  });
+
+  fsWatcher.onDidDelete((uri) => {
+    if (uri.path.endsWith('.md.erb')) {
+      erbManager.removeErb(uri, erbTreeProvider);
+    }
+  });
+
   // register tree view
   vscode.window.createTreeView('markdownErbTreeview', {
     treeDataProvider: erbTreeProvider,
