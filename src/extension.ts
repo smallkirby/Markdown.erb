@@ -5,7 +5,7 @@ const erb = require('erb');
 
 const erbTreeProvider = new MarkdownErbTreeProvider(rootPath, erbManager);
 
-export const activate = async (context: vscode.ExtensionContext) => {
+export const activate = async (_: vscode.ExtensionContext) => {
   // init ErbManager
   await erbManager.init();
 
