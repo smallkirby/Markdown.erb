@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:markdown-erb.startWatching"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -18,8 +18,36 @@
       {
         "command": "markdown-erb.startWatching",
         "title": "Start Watching .md.erb files"
+      },
+      {
+        "command": "markdown-erb.watchFile",
+        "title": "Watch File"
+      },
+      {
+        "command": "markdown-erb.unwatchFile",
+        "title": "Unwatch File"
       }
-    ]
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "markdownErbTreeview",
+          "name": "Markdown.erb"
+        }
+      ]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "markdown-erb.watchFile",
+          "when": "view == markdownErbTreeview && viewItem == erb-unwatched"
+        },
+        {
+          "command": "markdown-erb.unwatchFile",
+          "when": "view == markdownErbTreeview && viewItem == erb-watched"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

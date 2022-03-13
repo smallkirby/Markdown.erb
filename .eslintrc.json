@@ -16,7 +16,14 @@
         "no-throw-literal": "warn",
         "semi": ["error"],
         "indent": ["error", 2],
-        "quotes": ["error", "single"]
+        "quotes": ["error", "single"],
+        "comma-dangle": ["error", "always-multiline"],
+        "comma-spacing": ["error",
+            {
+                "before": false,
+                "after": true
+            }
+        ]
     },
     "ignorePatterns": [
         "out",
