@@ -9,12 +9,14 @@
         "@typescript-eslint"
     ],
     "rules": {
-        "@typescript-eslint/naming-convention": "warn",
-        "@typescript-eslint/semi": "warn",
-        "curly": "warn",
-        "eqeqeq": "warn",
+        "@typescript-eslint/naming-convention": "error",
+        "@typescript-eslint/semi": "error",
+        "curly": "off",
+        "eqeqeq": "error",
         "no-throw-literal": "warn",
-        "semi": "off"
+        "semi": ["error"],
+        "indent": ["error", 2],
+        "quotes": ["error", "single"]
     },
     "ignorePatterns": [
         "out",
