@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { fsWatcher, erbManager, rootPath, ErbFile } from './fswatcher';
 import { MarkdownErbTreeProvider } from './tree';
+import { erbCompletionProvider } from './completion';
 
 const erbTreeProvider = new MarkdownErbTreeProvider(rootPath, erbManager);
 
@@ -40,6 +41,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
       erbManager.onChangeTextDocument(event.document.uri);
     })
   );
+  context.subscriptions.push(erbCompletionProvider);
 
   vscode.window.showInformationMessage('Markdown.erb enabled.');
 };
