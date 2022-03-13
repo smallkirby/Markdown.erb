@@ -16,10 +16,6 @@
   "contributes": {
     "commands": [
       {
-        "command": "markdown-erb.startWatching",
-        "title": "Start Watching .md.erb files"
-      },
-      {
         "command": "markdown-erb.watchFile",
         "title": "Watch File"
       },

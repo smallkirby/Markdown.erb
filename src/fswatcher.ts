@@ -4,6 +4,8 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
+const erb = require('erb');
 import { MarkdownErbTreeProvider } from './tree';
 
 export const rootPath =
@@ -21,18 +23,18 @@ export class ErbFile extends vscode.TreeItem {
     this.contextValue = cx;
   }
   uri: vscode.Uri | null; // null uri means special file for this extension. it mustn't be added to ErbFileManager.
-  mdUri: vscode.Uri | null;
+  mdPath: string | null;
 
   constructor(
     uri: vscode.Uri | null,
     watched: boolean,
-    mdUri: vscode.Uri | null
+    mdUri: string | null
   ) {
     if (uri === null) {
       super(watched ? 'WATCHED' : 'UNWATCHED', vscode.TreeItemCollapsibleState.Collapsed);
       this._watched = watched;
       this.uri = uri;
-      this.mdUri = mdUri;
+      this.mdPath = mdUri;
       this._contextValue = 'title';
     } else {
       const parsedPath = path.parse(uri.path);
@@ -41,7 +43,7 @@ export class ErbFile extends vscode.TreeItem {
       this.tooltip = uri.path;
       this._watched = watched;
       this.uri = uri;
-      this.mdUri = mdUri;
+      this.mdPath = mdUri;
       this._contextValue = 'erb-unwatched';
     }
   }
@@ -56,6 +58,30 @@ export class ErbFile extends vscode.TreeItem {
     this._watched = false;
     this._contextValue = 'erb-unwatched';
     treeProvider.refresh();
+  }
+
+  private async doCompile(content: string): Promise<string | null> {
+    try {
+      return await erb({
+        timeout: 500,
+        template: content,
+      });
+    } catch (e) {
+      return null;
+    }
+  }
+
+  private writeMd(content: string) {
+    if (this.mdPath === null) {
+      this.mdPath = this.uri!!.path.replace('.md.erb', '.md');
+    }
+    fs.writeFileSync(this.mdPath, content);
+  }
+
+  async compileWrite(content: string) {
+    const compiledMd = await this.doCompile(content);
+    if (compiledMd === null) return;
+    this.writeMd(compiledMd);
   }
 }
 
@@ -105,6 +131,14 @@ export class ErbFileManager {
       return;
     }
     target.unwatch(treeProvider);
+  }
+
+  onChangeTextDocument(uri: vscode.Uri) {
+    const document = vscode.window.activeTextEditor?.document;
+    if (document === undefined) return;
+    const target = this.erbFiles.find(erb => erb.uri!!.path === uri.path);
+    if (target === undefined || !target.watched) return;
+    target.compileWrite(document.getText());
   }
 
   private raiseUninitedError() {
