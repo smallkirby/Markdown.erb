@@ -121,7 +121,7 @@ export class ErbmdPreprocessor {
   }
 
 
-  provideMderbHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
+  provideMderbHover(document: vscode.TextDocument, position: vscode.Position, _token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
     const targetRefFile = this.refFiles.find((ref) => path.parse(ref.uri.path).dir === path.parse(document.uri.path).dir);
     if (targetRefFile === undefined || !targetRefFile.valid) return { contents: [] };
 
