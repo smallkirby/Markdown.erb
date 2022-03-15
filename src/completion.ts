@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { erbPreprocessor } from './preprocessor';
 
 export const erbCompletionProvider = vscode.languages.registerCompletionItemProvider(
   'erb',
@@ -29,6 +30,23 @@ export const erbCompletionProvider = vscode.languages.registerCompletionItemProv
       // $INCLUDEREFS$ completion
       const includerefsCompletion = new vscode.CompletionItem('includerefs', vscode.CompletionItemKind.Snippet);
       includerefsCompletion.insertText = '$INCLUDEREFS$';
+
+      // reference completion
+      if (document.lineAt(position).text.includes('[&')) {
+        const substr = document.lineAt(position).text.substring(0, position.character);
+        const parts = substr.split('[&');
+        if (parts.length !== 0) {
+          const key = parts[parts.length - 1];
+          if (!key.includes(' ') && !key.includes(']')) {
+            const candNicks = erbPreprocessor.findNickStartsWith(key, document.uri);
+            return candNicks.map((candNick) => {
+              const newComp = new vscode.CompletionItem(candNick, vscode.CompletionItemKind.Keyword);
+              newComp.insertText = candNick;
+              return newComp;
+            });
+          }
+        }
+      }
 
       if (document.lineAt(position).text.substr(0, position.character).endsWith('<')) {
         return [

@@ -12,7 +12,7 @@ export interface RefEntry {
 }
 
 const refent2md = (ref: RefEntry, index: number): string => {
-  return `${index}. [${ref.text}](${ref.ref})`;
+  return `${index}. [${ref.text}](${ref.ref})<span id="${ref.alias}"></span>`;
 };
 
 const refs2md = (refs: RefEntry[]): string => {
@@ -39,16 +39,17 @@ export class RefFile {
   // @return: error message. empty if parse succeeds.
   parse(): string {
     this.refs = [];
+    let errMsg = '';
     try {
       const content = readFileSync(this.uri.path).toString();
       const refs: RefEntry[] = JSON.parse(content);
       this.valid = true;
       this.refs = refs;
-      return '';
     } catch (e: any) {
       this.valid = false;
-      return e.toString();
+      errMsg = e.toString();
     }
+    return errMsg;
   }
 }
 
@@ -77,13 +78,16 @@ export class ErbmdPreprocessor {
   }
 
   onRefFileChanged(uri: vscode.Uri) {
-    const target = this.refFiles.find((ref) => ref.uri === uri);
+    const target = this.refFiles.find((ref) => ref.uri.path === uri.path);
     if (target === undefined) return;
-    target.parse();
+    const errMsg = target.parse();
+    if (errMsg.length !== 0) {
+      vscode.window.showErrorMessage(`Failed to parse ref file: ${errMsg}`);
+    }
   }
 
   onRefFileDeleted(uri: vscode.Uri) {
-    const target = this.refFiles.findIndex((ref) => ref.uri === uri);
+    const target = this.refFiles.findIndex((ref) => ref.uri.path === uri.path);
     if (target === -1) return;
     this.refFiles.splice(target, 1);
   }
@@ -95,12 +99,25 @@ export class ErbmdPreprocessor {
   }
 
   preprocess(content: string, erb: ErbFile): string {
-    // replace PLACEHOLDER
     const refFile = this.getCorrespondingRefFile(erb);
     if (refFile === null) return content;
+    if (!refFile.valid) return content;
 
+    // replace PLACEHOLDER
     let newContent = content.replace(REFS_PLACEHOLDER, refs2md(refFile.refs));
+
+    // replace [&]
+    for (const [ix, ref] of refFile.refs.entries()) {
+      newContent = newContent.replace(`[&${ref.alias}]`, `<a href="#${ref.alias}">(${ix+1}).</a>`);
+    }
+
     return newContent;
+  }
+
+  findNickStartsWith(key: string, uri: vscode.Uri): string[] {
+    const targetRef = this.refFiles.find((ref) => path.parse(ref.uri.path).dir === path.parse(uri!!.path).dir);
+    if (targetRef === undefined) return [];
+    return targetRef.refs.filter((ent) => ent.alias.startsWith(key)).map((ent) => ent.alias);
   }
 }
 
