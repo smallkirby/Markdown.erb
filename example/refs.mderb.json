@@ -1,0 +1,17 @@
+[
+  {
+    "text": "My homepage",
+    "ref": "https://smallkirby.xyz",
+    "alias": "homepage"
+  },
+  {
+    "text": "Yes, Google",
+    "ref": "https://google.com",
+    "alias": "google"
+  },
+  {
+    "text": "Google Maps",
+    "ref": "https://www.google.com/maps",
+    "alias": "google-maps"
+  }
+]
