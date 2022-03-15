@@ -1,26 +1,40 @@
 import * as vscode from 'vscode';
-import { fsWatcher, erbManager, rootPath, ErbFile } from './fswatcher';
+import { erbWatcher, refWatcher, erbManager, rootPath, ErbFile } from './fswatcher';
 import { MarkdownErbTreeProvider } from './tree';
 import { erbCompletionProvider } from './completion';
 import { subscribeToDocumentChanges } from './diagnostic';
+import { erbPreprocessor } from './preprocessor';
 
 const erbTreeProvider = new MarkdownErbTreeProvider(rootPath, erbManager);
 
 export const activate = async (context: vscode.ExtensionContext) => {
   // init ErbManager
   await erbManager.init();
+  await erbPreprocessor.init();
 
   // watch filesystem
-  fsWatcher.onDidCreate((uri) => {
+  erbWatcher.onDidCreate((uri) => {
     if (uri.path.endsWith('.md.erb')) {
       erbManager.addErb([new ErbFile(uri, false, null)], erbTreeProvider);
     }
   });
 
-  fsWatcher.onDidDelete((uri) => {
+  erbWatcher.onDidDelete((uri) => {
     if (uri.path.endsWith('.md.erb')) {
       erbManager.removeErb(uri, erbTreeProvider);
     }
+  });
+
+  refWatcher.onDidCreate((uri) => {
+    erbPreprocessor.onRefFileCreated(uri);
+  });
+
+  refWatcher.onDidDelete((uri) => {
+    erbPreprocessor.onRefFileDeleted(uri);
+  });
+
+  refWatcher.onDidChange((uri) => {
+    erbPreprocessor.onRefFileChanged(uri);
   });
 
   // register tree view
@@ -39,7 +53,7 @@ export const activate = async (context: vscode.ExtensionContext) => {
   // subscribe events
   context.subscriptions.push(
     vscode.workspace.onDidChangeTextDocument((event) => {
-      erbManager.onChangeTextDocument(event.document.uri);
+      erbManager.onChangeTextDocument(event.document.uri, erbPreprocessor);
     })
   );
   context.subscriptions.push(erbCompletionProvider);

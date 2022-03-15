@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 const erb = require('erb');
 import { MarkdownErbTreeProvider } from './tree';
+import { ErbmdPreprocessor } from './preprocessor';
 
 export const rootPath =
   vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
@@ -23,6 +24,7 @@ export class ErbFile extends vscode.TreeItem {
     this.contextValue = cx;
   }
   uri: vscode.Uri | null; // null uri means special file for this extension. it mustn't be added to ErbFileManager.
+  refpath: vscode.Uri | null;
   mdPath: string | null;
 
   constructor(
@@ -33,6 +35,7 @@ export class ErbFile extends vscode.TreeItem {
     if (uri === null) {
       super(watched ? 'WATCHED' : 'UNWATCHED', vscode.TreeItemCollapsibleState.Collapsed);
       this._watched = watched;
+      this.refpath = null;
       this.uri = uri;
       this.mdPath = mdUri;
       this._contextValue = 'title';
@@ -41,6 +44,7 @@ export class ErbFile extends vscode.TreeItem {
       super(parsedPath.base, vscode.TreeItemCollapsibleState.None);
       this.description = uri.path.substring((rootPath !== null? rootPath : ' ').length);
       this.tooltip = uri.path;
+      this.refpath = null;
       this._watched = watched;
       this.uri = uri;
       this.mdPath = mdUri;
@@ -141,12 +145,15 @@ export class ErbFileManager {
     target.unwatch(treeProvider);
   }
 
-  onChangeTextDocument(uri: vscode.Uri) {
+  onChangeTextDocument(uri: vscode.Uri, preprocessor: ErbmdPreprocessor) {
     const document = vscode.window.activeTextEditor?.document;
     if (document === undefined) return;
     const target = this.erbFiles.find(erb => erb.uri!!.path === uri.path);
     if (target === undefined || !target.watched) return;
-    target.compileWrite(document.getText());
+
+    const preprocessedContent = preprocessor.preprocess(document.getText(), target);
+
+    target.compileWrite(preprocessedContent);
   }
 
   private raiseUninitedError() {
@@ -173,6 +180,7 @@ const getAllErb = async (): Promise<ErbFile[]> => {
   });
 };
 
-export const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*.md.erb');
+export const erbWatcher = vscode.workspace.createFileSystemWatcher('**/*.md.erb');
+export const refWatcher = vscode.workspace.createFileSystemWatcher('**/*.mderb.json');
 export const erbManager = new ErbFileManager();
 
