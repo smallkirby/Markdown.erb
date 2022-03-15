@@ -96,5 +96,4 @@ export const subscribeToDocumentChanges = (context: vscode.ExtensionContext, erb
   context.subscriptions.push(
     vscode.workspace.onDidCloseTextDocument(doc => erbDiagnostic.delete(doc.uri))
   );
-
 };

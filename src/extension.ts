@@ -62,6 +62,11 @@ export const activate = async (context: vscode.ExtensionContext) => {
   const erbDiagnostic = vscode.languages.createDiagnosticCollection('mderb');
   context.subscriptions.push(erbDiagnostic);
   subscribeToDocumentChanges(context, erbDiagnostic);
+  vscode.languages.registerHoverProvider('erb', {
+    provideHover(document, position, token) {
+      return erbPreprocessor.provideMderbHover(document, position, token);
+    },
+  });
 
   vscode.window.showInformationMessage('Markdown.erb enabled.');
 };

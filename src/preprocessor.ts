@@ -119,6 +119,25 @@ export class ErbmdPreprocessor {
     if (targetRef === undefined) return [];
     return targetRef.refs.filter((ent) => ent.alias.startsWith(key)).map((ent) => ent.alias);
   }
+
+
+  provideMderbHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Hover> {
+    const targetRefFile = this.refFiles.find((ref) => path.parse(ref.uri.path).dir === path.parse(document.uri.path).dir);
+    if (targetRefFile === undefined || !targetRefFile.valid) return { contents: [] };
+
+    const line = document.lineAt(position).text;
+    const preParts = line.substring(0, position.character).split('[&');
+    const postParts = line.substring(position.character).split(']');
+    if (preParts.length === 0 || preParts.length === 0) {
+      return { contents: [] };
+    }
+    const keyword = preParts[preParts.length - 1] + postParts[0];
+    const targetRef = targetRefFile.refs.find((ref) => ref.alias === keyword);
+    if (targetRef === undefined) return { contents: [] };
+    return {
+      contents: [`${targetRef.text}: ${targetRef.ref}`],
+    };
+  };
 }
 
 const getAllRefs = async (): Promise<RefFile[]> => {
