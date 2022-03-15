@@ -14,6 +14,17 @@ Then, this ***Markdown.erb*** is for you.
 There, you can use variables, repeat expression, or whatever else you can do in ERB.
 
 
+## Install
+
+***Markdown.erb*** is now not published on Visual Studio Marketplace. So you have to install it manually.
+
+```bash
+# For the detail of manual install from .vsix file,
+# please refer to https://code.visualstudio.com/docs/editor/extension-marketplace#_install-from-a-vsix
+wget https://github.com/smallkirby/Markdown.erb/releases/download/$VERSION/markdown-erb-$VERSION.vsix
+code --install-extension markdown-erb-$VERSION.vsix
+```
+
 ## Features
 
 ### Easy erb compile
