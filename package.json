@@ -10,7 +10,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished"
+    "workspaceContains:**/*.md.erb"
   ],
   "main": "./out/extension.js",
   "contributes": {
