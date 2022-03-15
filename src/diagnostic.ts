@@ -39,10 +39,11 @@ const analyzeErbError = (emsg: string, doc: vscode.TextDocument): vscode.Diagnos
   const mainline = lines[0];
 
   const errorLocation = mainline.split(':in')[0];
+  const errorMsg = mainline.split(': ')[1];
   const lineNumber = Number(errorLocation.split(':')[1]) - 1;
   const range = new vscode.Range(lineNumber, 0, lineNumber, doc.lineAt(lineNumber).text.length);
 
-  const diagnostic = new vscode.Diagnostic(range, 'ERROR', vscode.DiagnosticSeverity.Error);
+  const diagnostic = new vscode.Diagnostic(range, errorMsg, vscode.DiagnosticSeverity.Error);
   return diagnostic;
 };
 
