@@ -22,19 +22,25 @@ export const erbCompletionProvider = vscode.languages.registerCompletionItemProv
       // <%= ruby code %> completion
       const rcodeCompletion = new vscode.CompletionItem('<%=', vscode.CompletionItemKind.Snippet);
       rcodeCompletion.insertText = new vscode.SnippetString('<%\n${1}\n%>\n');
-      // '<% ruby code %>' completion in case '<>' is auto completed by other party.
+      // '<%= ruby code %>' completion in case '<>' is auto completed by other party.
       const rcodeCompletionNoBracket = new vscode.CompletionItem('<%', vscode.CompletionItemKind.Snippet);
       rcodeCompletionNoBracket.insertText = new vscode.SnippetString('%\n${1}\n%');
+
+      // $INCLUDEREFS$ completion
+      const includerefsCompletion = new vscode.CompletionItem('includerefs', vscode.CompletionItemKind.Snippet);
+      includerefsCompletion.insertText = '$INCLUDEREFS$';
 
       if (document.lineAt(position).text.substr(0, position.character).endsWith('<')) {
         return [
           openingCompletionNoBracket,
           rcodeCompletionNoBracket,
+          includerefsCompletion,
         ];
       } else {
         return [
           openingCompletion,
           rcodeCompletion,
+          includerefsCompletion,
         ];
       }
     },
