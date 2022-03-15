@@ -1,6 +1,19 @@
 import * as vscode from 'vscode';
 import { spawnSync } from 'child_process';
 
+const DIAGNOSTIC_INTERVAL_MS = 1000;
+
+let lastExecute = new Date();
+
+const shouldExecuteDiagnostic = (): boolean => {
+  const now = new Date();
+  if (now.getTime() - lastExecute.getTime() >= DIAGNOSTIC_INTERVAL_MS) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 const checkErbExists = (): boolean => {
   const whichResult = spawnSync('which', ['erb']);
   return whichResult.status === 0;
@@ -48,6 +61,9 @@ const analyzeErbError = (emsg: string, doc: vscode.TextDocument): vscode.Diagnos
 };
 
 export const refreshDiagnostics = (doc: vscode.TextDocument, emojiDiagnostics: vscode.DiagnosticCollection): void => {
+  if (!shouldExecuteDiagnostic()) return;
+  lastExecute = new Date();
+
   const prog = doc.getText();
   const error = compileErb(prog);
   if (error === null || error === '') {
