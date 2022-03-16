@@ -57,8 +57,11 @@ export class ErbmdPreprocessor {
 
   private refFiles: RefFile[];
 
+  private referenceRepresentation: string;
+
   constructor() {
     this.refFiles = [];
+    this.referenceRepresentation = vscode.workspace.getConfiguration('markdownerb')!!.get('referenceRepresentation')!!;
   }
 
   async init() {
@@ -108,7 +111,7 @@ export class ErbmdPreprocessor {
 
     // replace [&]
     for (const [ix, ref] of refFile.refs.entries()) {
-      newContent = newContent.replace(`[&${ref.alias}]`, `<a href="#${ref.alias}">(${ix+1}).</a>`);
+      newContent = newContent.split(`[&${ref.alias}]`).join(`<a href="#${ref.alias}">${this.referenceRepresentation.replace('$$', (ix + 1).toString())}</a>`);
     }
 
     return newContent;
@@ -137,6 +140,11 @@ export class ErbmdPreprocessor {
     return {
       contents: [`${targetRef.text}: ${targetRef.ref}`],
     };
+  };
+
+  onReferenceRepresentationChanged(newRepr: string) {
+    this.referenceRepresentation = newRepr;
+    /* should re-generate md here */
   };
 }
 

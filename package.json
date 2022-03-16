@@ -43,6 +43,16 @@
           "when": "view == markdownErbTreeview && viewItem == erb-watched"
         }
       ]
+    },
+    "configuration": {
+      "title": "Markdown.erb",
+      "properties": {
+        "markdownerb.referenceRepresentation": {
+          "type": "string",
+          "default": "($$).",
+          "description": "Describes how reference is expanded to. \n`$$` is expanded to reference number.\nExample: ($$). => (1)."
+        }
+      }
     }
   },
   "repository": {

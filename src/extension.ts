@@ -4,6 +4,7 @@ import { MarkdownErbTreeProvider } from './tree';
 import { erbCompletionProvider } from './completion';
 import { subscribeToDocumentChanges } from './diagnostic';
 import { erbPreprocessor } from './preprocessor';
+import { initConfigurationWatcher } from './configuration';
 
 const erbTreeProvider = new MarkdownErbTreeProvider(rootPath, erbManager);
 
@@ -11,6 +12,9 @@ export const activate = async (context: vscode.ExtensionContext) => {
   // init ErbManager
   await erbManager.init();
   await erbPreprocessor.init();
+
+  // watch configuration
+  initConfigurationWatcher(erbPreprocessor);
 
   // watch filesystem
   erbWatcher.onDidCreate((uri) => {
